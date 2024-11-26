@@ -135,13 +135,13 @@ void switch_interrupt_handler_P1() {
 
   if (p1val & SW1) {
 
-    //P1OUT &= ~LEDS;
+    P1OUT &= ~LEDS;
 
-    //P1OUT &= ~LED_GREEN;
+    P1OUT &= ~LED_GREEN;
 
-    // buzzer_set_period(0);
+    buzzer_set_period(0);
 
-    //redControl(1);
+    redControl(1);
 
 
 
@@ -153,11 +153,11 @@ void switch_interrupt_handler_P1() {
 
     green_on = 1;
 
-    //redControl(0);
+    redControl(0);
 
-    //P1OUT |= LED_GREEN;
+    P1OUT |= LED_GREEN;
 
-    //buzzer_set_period(800);
+    buzzer_set_period(800);
 
   }
 
@@ -193,17 +193,17 @@ void switch_interrupt_handler_P2_2() {
 
   if(p2val & SW2) {
 
-    //P1OUT &= ~LED_RED;
+    P1OUT &= ~LED_RED;
 
-    //buzzer_set_period(0);
+    buzzer_set_period(0);
 
   } else {
 
     red_on = redControl(red_on);
 
-    //buzzer_set_period(800);
+    buzzer_set_period(800);
 
-    //redControl(1);
+    redControl(1);
 
   }
 
@@ -223,7 +223,7 @@ void switch_interrupt_handler_P2_3() {
 
   P2IES |= (p2val & SWITCH_3);
 
-  P2IES &= (p2val ~SWITCH_3);
+  P2IES &= (p2val |  ~SWITCH_3);
 
   if(p2val & SW3) {
 
@@ -231,13 +231,13 @@ void switch_interrupt_handler_P2_3() {
 
     green_on = 0;
 
-    //buzzer_set_period(0);
+    buzzer_set_period(0);
 
   } else {
 
     P1OUT |= LED_GREEN;
 
-    //buzzer_set_period(3300);
+    buzzer_set_period(3300);
 
     green_on = 1;
 
