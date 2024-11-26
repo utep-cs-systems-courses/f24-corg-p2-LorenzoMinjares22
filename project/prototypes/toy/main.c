@@ -5,7 +5,7 @@
 #include "led.h"
 
 #include "buzzer.h"
-
+#include "blink.h"
 
 
 //#define LED_RED BIT6
@@ -32,7 +32,7 @@
 
 //#define SWITCH_B SW2
 
-
+ 
 
 #define SWITCH_1 SW1
 
@@ -62,57 +62,19 @@ volatile int redDim = 0;
 
 int main(void) {
 
-  P1DIR |= LEDS;
+  WDTCTL = WDTPW + WDTHOLD;    // Stop watchdog timer
+  configureClocks();           // Setup master clock
+  enableWDTInterrupts();
+  P1DIR |= LEDS;    // Set LED pins as outputs
+  P1OUT &= ~LEDS;   // Initialize LEDs to off Initialize LEDs
+  buzzer_init();               // Initialize buzzer
 
-  P1OUT &= ~LEDS;
+  P1DIR |= LEDS;               // Set LED pins as outputs
+  P1OUT &= ~LEDS;              // Turn off all LEDs
 
-
-
-  // P2 may not have LEDS wut
-
-  // P2DIR |= LEDS;
-
-  //P2OUT |= LEDS;
-
-
-
-  configureClocks();
-
-  buzzer_init();
-
-  //enableWDTInterrupts();
-
-
-
-
-
-  P1REN |= SWITCH_1;
-
-  P1IE |= SWITCH_1;
-
-  P1OUT |= SWITCH_1;
-
-  P1DIR &= ~SWITCH_1;
-
-
-
-
-
-  P2REN |= SWITCH_P2;
-
-  P2IE |= SWITCH_P2;
-
-  P2IES |= SWITCH_P2;
-
+  P2REN |= SWITCH_P2;          // Enable pull-up resistors for P2 buttons
   P2OUT |= SWITCH_P2;
-
-  /*
-
-  P2DIR &= ~SWITCH_P2;
-
-  */
-
-
+  P2IE |= SWITCH_P2;  
 
   or_sr(0x18);
 
@@ -246,32 +208,50 @@ void switch_interrupt_handler_P2_3() {
 }
 
 
+volatile int dimDutyCycle = 0; // Duty cycle (0-100%)
+
+volatile int dimEnabled = 0;  // Whether dimming is active
+
+
 
 void switch_interrupt_handler_P2_4() {
 
   char p2val = P2IN;
 
+
+
   P2IES |= (p2val & SWITCH_4);
 
   P2IES &= (p2val | ~SWITCH_4);
 
-  if (p2val & SW4) {
 
-    if(red_on) {
 
-      blink();
+  if (p2val & SWITCH_4) {
 
-      red_on = 0;
+    setDimEnabled(0); // Disable dimming on release
+
+  } else {
+
+    setDimEnabled(1); // Enable dimming
+
+    static int dutyCycle = 0;
+
+    dutyCycle += 20;  // Increment duty cycle by 20%
+
+    if (dutyCycle > 100) {
+
+      dutyCycle = 0; // Reset to 0% after 100%
 
     }
 
-  }else {
-
-    P1OUT &= ~LED_RED;
+    setDimDutyCycle(dutyCycle); // Update duty cycle
 
   }
 
 }
+
+
+
 
 
 
@@ -311,49 +291,50 @@ void switch_interrupt_handler_P2_5() {
 
 }
 
-/*
-
-void __interrupt_vec(WDT_VECTOR) WDT() {
-
-timeAdvStateMachines();
-
-}*/
 
 
+void __interrupt_vec(PORT2_VECTOR) Port_2() {
 
-void __interrupt_vec(PORT1_VECTOR) Port_2() {
+  if (P2IFG & SW2) {
 
-  if (P2IFG & SWITCH_2) {
-
-    P2IFG &= ~SWITCH_2;
+    P2IFG &= ~SW2;
 
     switch_interrupt_handler_P2_2();
 
   }
 
-  if (P2IFG & SWITCH_3) {
+  if (P2IFG & SW3) {
 
-    P2IFG &= ~SWITCH_3;
+    P2IFG &= ~SW3;
 
     switch_interrupt_handler_P2_3();
 
   }
 
-  if (P2IFG & SWITCH_4) {
+  if (P2IFG & SW4) {
 
-    P2IFG &= ~SWITCH_4;
+    P2IFG &= ~SW4;
 
     switch_interrupt_handler_P2_4();
 
   }
 
-  if(P2IFG & SWITCH_5) {
+  if (P2IFG & SW5) {
 
-    P2IFG &= ~SWITCH_5;
-
-    //song();
+    P2IFG &= ~SW5;
 
     switch_interrupt_handler_P2_5();
 
   }
+
 }
+
+
+void __interrupt_vec(WDT_VECTOR) WDT() {
+
+  blinkDimmingLogic(); // Call dimming logic in blink.c
+
+  
+
+}
+

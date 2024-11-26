@@ -22,13 +22,13 @@ all: led-c.elf #led-s.elf
 
 
 
-led-s.elf: ${COMMON_OBJECTS} buzzer.o redControl-s.o blink.o 
+led-s.elf: ${COMMON_OBJECTS} buzzer.o redControl-s.o blink.o  
 
 	${CC} ${CFLAGS} ${LDFLAGS} -o $@ $^ ../lib/libTimer.a
 
 
 
-led-c.elf: ${COMMON_OBJECTS} buzzer.o redControl-c.o blink.o song.o
+led-c.elf: ${COMMON_OBJECTS} buzzer.o redControl-c.o blink.o  song.o
 
 	${CC} ${CFLAGS} ${LDFLAGS} -o $@ $^ ../lib/libTimer.a
 
@@ -60,6 +60,6 @@ redControl-c.o: led.h
 
 wdInterruptHandler.o: led.h
 
-blink.o: led.h
+blink.o: blink.h
 
 song.o: led.h

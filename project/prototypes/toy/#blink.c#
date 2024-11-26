@@ -69,4 +69,3 @@ void setDimDutyCycle(int dutyCycle) {
   dimDutyCycle = dutyCycle;
 
 }
-

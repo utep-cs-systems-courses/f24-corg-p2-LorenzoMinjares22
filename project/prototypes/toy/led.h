@@ -14,7 +14,7 @@
 
 int redControl(int on);
 
-void  blink();
+//void  blink();
 
 void song();
 
